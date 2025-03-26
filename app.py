@@ -1,6 +1,6 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Disable GPU before imports
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'   # Suppress TensorFlow warnings
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from flask import Flask, request, jsonify
 import tensorflow as tf
 import numpy as np
@@ -8,7 +8,7 @@ import joblib
 import logging
 import time
 
-tf.config.set_visible_devices([], 'GPU')  # Force CPU-only
+tf.config.set_visible_devices([], 'GPU')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -37,8 +37,11 @@ def predict():
         logger.info(f"Received RGB values: {rgb_values}")
 
         start_time = time.time()
-        # Temporarily replace model prediction with dummy value
-        ph_pred = 7.0  # Dummy pH value
+        logger.info("Starting preprocessing...")
+        rgb_normalized = scaler.transform(rgb_values)
+        pca_components = pca.transform(rgb_normalized)
+        logger.info("Preprocessing done, starting prediction...")
+        ph_pred = model.predict(pca_components, verbose=0)[0][0]
         end_time = time.time()
 
         logger.info(f"Predicted pH: {ph_pred}, Time taken: {end_time - start_time:.2f} seconds")
@@ -51,4 +54,3 @@ if __name__ == '__main__':
     logger.info("Starting Flask Soil pH Prediction API")
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-    
