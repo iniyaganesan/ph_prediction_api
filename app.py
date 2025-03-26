@@ -1,12 +1,14 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Must be before any TensorFlow import
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from flask import Flask, request, jsonify
 import tensorflow as tf
 import numpy as np
 import joblib
 import logging
+import time
 
-# Rest of your code...
+tf.config.set_visible_devices([], 'GPU')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -33,10 +35,14 @@ def predict():
             return jsonify({'error': 'Missing "rgb" key in JSON'}), 400
         rgb_values = np.array([data['rgb']], dtype=np.float32)
         logger.info(f"Received RGB values: {rgb_values}")
+
+        start_time = time.time()  # Start timing
         rgb_normalized = scaler.transform(rgb_values)
         pca_components = pca.transform(rgb_normalized)
         ph_pred = model.predict(pca_components, verbose=0)[0][0]
-        logger.info(f"Predicted pH: {ph_pred}")
+        end_time = time.time()  # End timing
+
+        logger.info(f"Predicted pH: {ph_pred}, Time taken: {end_time - start_time:.2f} seconds")
         return jsonify({'ph': float(ph_pred)})
     except Exception as e:
         logger.error(f"Error in /predict: {str(e)}")
