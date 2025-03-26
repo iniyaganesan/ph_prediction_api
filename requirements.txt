@@ -1,5 +1,1 @@
-flask
-tensorflow
-numpy
-joblib
-gunicorn
+scikit-learn 
