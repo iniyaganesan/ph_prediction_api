@@ -1,0 +1,11 @@
+*.zip
+*.rar
+*.exe
+
+*.pt
+*.pkl
+__pycache__/
+*.log
+node_modules/
+.DS_Store
+
